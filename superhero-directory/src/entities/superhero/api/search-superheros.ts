@@ -21,24 +21,40 @@ export function useSearchSuperheros(params: Params) {
 
   return useQuery({
     queryKey: superheroKeys.search(query),
-    queryFn: async () => {
-      const response: ResponseSuccess<ResponsePayload> = await fetch(
-        `${config.apiHost}/superhero/name/${query}`
-      )
-        .then(async (res) => {
-          if (!res.ok) {
-            const error: ResponseError = await res.json();
+    queryFn: async (): Promise<ResponseSuccess<ResponsePayload>> => {
+      const response = await fetch(
+        `${config.apiHost}/api/${config.apiToken}/search/${query}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-            throw new Error(
-              `Error ${res.status}: ${res.statusText} - ${error.error}`
-            );
-          }
+      const decodedResponse: ResponseSuccess<ResponsePayload> | ResponseError =
+        await response.json();
 
-          return res.json();
-        })
-        .then((res) => res.results);
+      if (decodedResponse.response === 'error') {
+        if (decodedResponse.error === 'character with given name not found') {
+          // if there's no character with the given name,
+          // the api returns status 200 with an error body
+          // so we need to handle it as a success response
+          // with an empty results array to avoid react-query
+          // to try to retry the request
+          const result: ResponseSuccess<ResponsePayload> = {
+            response: 'success',
+            'results-for': query,
+            results: [],
+          };
+          return result;
+        }
 
-      return response;
+        throw new Error(
+          `Error ${response.status}: ${response.statusText} - ${decodedResponse.error}`
+        );
+      }
+
+      return decodedResponse;
     },
   });
 }
