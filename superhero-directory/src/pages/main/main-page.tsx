@@ -28,8 +28,8 @@ const MainPage: FC = () => {
   }
 
   return (
-    <article className="mx-auto rounded-md bg-white p-6 shadow-md">
-      <header className="mb-6">
+    <article className="mx-auto flex flex-col gap-6 rounded-md bg-white p-6 shadow-md">
+      <header>
         <h1 className="font-display text-center text-4xl">
           Superhero Directory
         </h1>
@@ -37,14 +37,17 @@ const MainPage: FC = () => {
           Welcome to the Superhero Directory! Here you can find information
           about your favorite superheroes.
         </p>
+      </header>
+      <section>
+        <h2 className="mb-2 text-2xl font-semibold">Search for a Superhero</h2>
         <SearchInput
           value={searchInputValue}
           onChange={handleSearchInputChange}
           dimBackground={debouncingQuery}
-          placeholder="Search for a superhero..."
+          placeholder="Batgirl"
         />
-      </header>
-      {content}
+      </section>
+      <section>{content}</section>
     </article>
   );
 };
